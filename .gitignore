@@ -1,0 +1,39 @@
+# Emacs build artifacts
+*.elc
+*.eln
+*-autoloads.el
+
+# Emacs backup, autosave, and lock files
+*~
+\#*\#
+.\#*
+auto-save-list/
+tramp
+
+# Local OKF indexes and SQLite sidecars
+.okf-roam/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+local.el
+
+# Test and package output
+coverage/
+build/
+dist/
+*.tar
+
+# Editor and operating-system state
+.DS_Store
+.idea/
+.vscode/
+
+# Local planning notes
+/idea.md

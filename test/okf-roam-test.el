@@ -98,6 +98,17 @@
                        0)))
         (delete-file outside)))))
 
+(ert-deftest okf-roam-preview-preamble-uses-frontmatter ()
+  (okf-roam-test--with-bundle
+    (let* ((file (okf-roam-test--write
+                  root "tables/users.md"
+                  "---\ntype: Table\ntitle: Users & Accounts\ndescription: One row per <known> user.\n---\n\n# Schema\n"))
+           (preamble
+            (okf-roam--preview-preamble (okf-roam--read-concept file))))
+      (should (string-match-p "<strong>Table</strong>" preamble))
+      (should (string-match-p "<h1>Users &amp; Accounts</h1>" preamble))
+      (should (string-match-p "One row per &lt;known&gt; user" preamble)))))
+
 (provide 'okf-roam-test)
 
 ;;; okf-roam-test.el ends here

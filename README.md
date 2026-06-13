@@ -10,6 +10,7 @@ in SQLite, then exposes:
 - `M-x okf-roam-node-find`
 - `M-x okf-roam-buffer-toggle`
 - `M-x okf-roam-open-at-point`
+- `M-x okf-roam-preview`
 
 `index.md` and `log.md` are treated as reserved navigation files rather than
 concepts. Broken links remain in the index and appear in the side buffer.
@@ -25,10 +26,16 @@ concepts. Broken links remain in the index and appear in the side buffer.
 (global-set-key (kbd "C-c n f") #'okf-roam-node-find)
 (global-set-key (kbd "C-c n b") #'okf-roam-buffer-toggle)
 (global-set-key (kbd "C-c n o") #'okf-roam-open-at-point)
+(global-set-key (kbd "C-c n p") #'okf-roam-preview)
 ```
 
 Run `M-x okf-roam-db-sync` after changing the bundle. The SQLite index is
 stored at `<bundle>/.okf-roam/okf-roam.db` by default.
+
+`M-x okf-roam-preview` provides an OKF-aware browser preview when Pandoc and
+the Emacs `markdown-mode` package are installed. Unlike the generic
+`markdown-preview`, it displays the concept's frontmatter title, type, and
+description and keeps Pandoc diagnostics out of the generated HTML.
 
 For a quick local trial, point `okf-roam-directory` at `examples/data-team`,
 sync, then open Weekly Active Users and run `M-x okf-roam-buffer-toggle`. The

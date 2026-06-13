@@ -23,6 +23,11 @@
 (require 'sqlite)
 (require 'subr-x)
 
+(defvar markdown-command)
+(defvar markdown-xhtml-body-preamble)
+(declare-function markdown-standalone "markdown-mode"
+                  (&optional output-buffer-name title))
+
 (defgroup okf-roam nil
   "Roam-style navigation for Open Knowledge Format bundles."
   :group 'files
@@ -36,6 +41,10 @@
   "SQLite database used by okf-roam.
 When nil, use `.okf-roam/okf-roam.db' inside `okf-roam-directory'."
   :type '(choice (const :tag "Inside bundle" nil) file))
+
+(defcustom okf-roam-pandoc-command "pandoc"
+  "Pandoc executable used by `okf-roam-preview'."
+  :type 'string)
 
 (defconst okf-roam--reserved-files '("index.md" "log.md"))
 (defconst okf-roam--buffer-name "*okf-roam*")
@@ -464,6 +473,68 @@ ID-INDEX and LABEL-INDEX identify the relevant fields in each row."
     (unless (okf-roam--concept-file-p file)
       (user-error "Current file is not an OKF concept"))
     (okf-roam--concept-id file)))
+
+(defun okf-roam--html-escape (text)
+  "Escape TEXT for inclusion in HTML."
+  (let ((escaped (string-replace "&" "&amp;" text)))
+    (setq escaped (string-replace "<" "&lt;" escaped))
+    (setq escaped (string-replace ">" "&gt;" escaped))
+    (string-replace "\"" "&quot;" escaped)))
+
+(defun okf-roam--preview-preamble (concept)
+  "Return an HTML heading block for CONCEPT."
+  (let ((title (okf-roam--html-escape (okf-roam-concept-title concept)))
+        (type (okf-roam--html-escape (okf-roam-concept-type concept)))
+        (description (okf-roam-concept-description concept)))
+    (concat
+     "<header class=\"okf-roam-concept-header\">"
+     "<p><strong>" type "</strong></p>"
+     "<h1>" title "</h1>"
+     (if (and (stringp description) (not (string-empty-p description)))
+         (format "<p>%s</p>" (okf-roam--html-escape description))
+       "")
+     "</header>")))
+
+(defun okf-roam--compile-pandoc (begin end output-buffer)
+  "Compile Markdown from BEGIN to END into OUTPUT-BUFFER with Pandoc."
+  (unless (executable-find okf-roam-pandoc-command)
+    (user-error "Pandoc executable not found: %s" okf-roam-pandoc-command))
+  (let ((error-file (make-temp-file "okf-roam-pandoc-")))
+    (unwind-protect
+        (let ((status
+               (call-process-region
+                begin end okf-roam-pandoc-command nil
+                (list output-buffer error-file) nil
+                "--from=markdown"
+                "--to=html"
+                "--mathjax"
+                "--syntax-highlighting=pygments")))
+          (unless (eq status 0)
+            (error "Pandoc failed: %s"
+                   (string-trim
+                    (with-temp-buffer
+                      (insert-file-contents error-file)
+                      (buffer-string)))))
+          status)
+      (delete-file error-file))))
+
+;;;###autoload
+(defun okf-roam-preview ()
+  "Preview the current OKF concept as HTML in a browser.
+Use frontmatter metadata for the document heading and Pandoc for Markdown
+conversion.  This requires the `markdown-mode' package and Pandoc."
+  (interactive)
+  (unless buffer-file-name
+    (user-error "Current buffer is not visiting a file"))
+  (unless (require 'markdown-mode nil t)
+    (user-error "Install the `markdown-mode' package to use previews"))
+  (let* ((concept (okf-roam--read-concept buffer-file-name))
+         (markdown-command #'okf-roam--compile-pandoc)
+         (markdown-xhtml-body-preamble
+          (okf-roam--preview-preamble concept)))
+    (browse-url-of-buffer
+     (markdown-standalone "*okf-roam preview*"
+                          (okf-roam-concept-title concept)))))
 
 ;;;###autoload
 (defun okf-roam-buffer-toggle ()

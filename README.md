@@ -30,10 +30,11 @@ concepts. Broken links remain in the index and appear in the side buffer.
 Run `M-x okf-roam-db-sync` after changing the bundle. The SQLite index is
 stored at `<bundle>/.okf-roam/okf-roam.db` by default.
 
-For a quick local trial, point `okf-roam-directory` at `examples/basic`, sync,
-then open the Review a Concept playbook and run
-`M-x okf-roam-buffer-toggle`. Its intentionally broken Publishing Guide link
-will appear in the side buffer.
+For a quick local trial, point `okf-roam-directory` at `examples/data-team`,
+sync, then open Weekly Active Users and run `M-x okf-roam-buffer-toggle`. The
+sample follows the table, metric, join-path, and runbook use cases described in
+Google Cloud's [OKF introduction][okf-introduction]. Open the Investigate a
+Metric Change playbook to see an intentionally broken Metric Incident Log link.
 
 The parser consumes the top-level OKF fields it needs without imposing a fixed
 schema. Unknown producer-defined frontmatter is preserved in the database as
@@ -47,3 +48,4 @@ make check
 ```
 
 [okf]: https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
+[okf-introduction]: https://cloud.google.com/blog/products/data-analytics/how-the-open-knowledge-format-can-improve-data-sharing/
